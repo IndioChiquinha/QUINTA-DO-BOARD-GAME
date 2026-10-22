@@ -274,10 +274,10 @@ HTML
 
     <!-- JSONBin.io Cloud Synchronization & App Logic -->
     <script>
-        // CONFIGURAÇÃO DO JSONBIN.IO
+        // CONFIGURAÇÃO FIXA COM O SEU BIN ID
         const JSONBIN_CONFIG = {
-            binId: "6ada4f6cffd5d1605383703a", // Ex: "65a1b2c3..." Substitua pelo seu ID do JSONBin.io
-            apiKey: "$2a$10$Wr7/8ARz23rKmP6.QgFW7OiaK05uugdhXbroDaM8CJmvvHAG8yJyO" // Opcional se o bin for público para leitura/escrita ou se usar a Master Key
+            binId: "6ada4f6cffd5d1605383703a",
+            apiKey: ""
         };
 
         const PLAYERS = [
@@ -288,10 +288,10 @@ HTML
         ];
 
         const SAMPLE_GAMES = {
-            aron: ['Terraforming Mars', 'Wingspan', 'Catan'],
-            lucas: ['Ticket to Ride', 'Brass: Birmingham', 'Azul'],
-            rodolfo: ['Scythe', '7 Wonders', 'Carcassonne'],
-            suellen: ['Pandemic', 'Dixit', 'Splendor']
+            aron: ['Terraforming Mars', 'Ark Nova', 'Scythe'],
+            lucas: ['Catan', '7 Wonders', 'Splendor'],
+            rodolfo: ['Ticket to Ride', 'Carcassonne', 'Pandemic'],
+            suellen: ['Wingspan', 'Azul', 'Dixit']
         };
 
         let gameState = {
@@ -300,23 +300,20 @@ HTML
             isRolling: false
         };
 
-        let isSyncing = false;
         let saveTimeout = null;
 
-        // Inicialização
         async function initApp() {
-            await fetchFromCloud();
             renderPlayersGrid();
             renderHistory();
             init3DDice();
+            await fetchFromCloud();
 
-            // Sincronização periódica a cada 4 segundos para pegar alterações de outros usuários
+            // Sincronização automática a cada 4 segundos
             setInterval(fetchFromCloud, 4000);
         }
 
-        // Buscar dados da nuvem (JSONBin.io)
         async function fetchFromCloud() {
-            if (!JSONBIN_CONFIG.binId || JSONBIN_CONFIG.binId === "SEU_BIN_ID_AQUI") return;
+            if (!JSONBIN_CONFIG.binId) return;
             try {
                 const headers = { 'Content-Type': 'application/json' };
                 if (JSONBIN_CONFIG.apiKey) headers['X-Master-Key'] = JSONBIN_CONFIG.apiKey;
@@ -325,16 +322,12 @@ HTML
                 if (response.ok) {
                     const data = await response.json();
                     if (data && data.record) {
-                        // Atualiza estado apenas se houver dados remotos válidos
-                        if (data.record.games) {
-                            // Verifica se o usuário não está digitando ativamente em algum input para não perder o foco
-                            const activeEl = document.activeElement;
-                            const isTyping = activeEl && activeEl.tagName === 'INPUT';
-                            
-                            if (!isTyping) {
-                                gameState.games = data.record.games;
-                                renderPlayersGrid();
-                            }
+                        const activeEl = document.activeElement;
+                        const isTyping = activeEl && activeEl.tagName === 'INPUT';
+                        
+                        if (!isTyping && data.record.games) {
+                            gameState.games = data.record.games;
+                            renderPlayersGrid();
                         }
                         if (data.record.history) {
                             gameState.history = data.record.history;
@@ -348,15 +341,11 @@ HTML
             }
         }
 
-        // Salvar dados na nuvem com Debounce (evita requisições excessivas enquanto digita)
         function saveState() {
             updateSyncIndicator('saving');
             clearTimeout(saveTimeout);
             saveTimeout = setTimeout(async () => {
-                if (!JSONBIN_CONFIG.binId || JSONBIN_CONFIG.binId === "SEU_BIN_ID_AQUI") {
-                    updateSyncIndicator('offline');
-                    return;
-                }
+                if (!JSONBIN_CONFIG.binId) return;
                 try {
                     const headers = { 'Content-Type': 'application/json' };
                     if (JSONBIN_CONFIG.apiKey) headers['X-Master-Key'] = JSONBIN_CONFIG.apiKey;
@@ -393,10 +382,7 @@ HTML
                 text.innerText = "Salvando...";
             } else if (status === 'error') {
                 dot.className = "w-2 h-2 rounded-full bg-rose-500";
-                text.innerText = "Erro de Sincronização";
-            } else {
-                dot.className = "w-2 h-2 rounded-full bg-slate-500";
-                text.innerText = "Modo Local";
+                text.innerText = "Erro ao Conectar";
             }
         }
 
@@ -479,7 +465,7 @@ HTML
             return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
-        // --- THREE.JS D12 ---
+        // --- THREE.JS D12 3D ---
         let scene, camera, renderer, diceMesh;
 
         function init3DDice() {
