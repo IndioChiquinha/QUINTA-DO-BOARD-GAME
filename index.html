@@ -5,22 +5,22 @@ HTML
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quinta do Board Game - Sorteio D12</title>
-    <!-- Tailwind CSS para estilização rápida e moderna -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Three.js para o D12 3D -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <!-- Canvas Confetti para comemoração -->
+    <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-    <!-- Font Awesome para ícones -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
         body { font-family: 'Poppins', sans-serif; background-color: #0f172a; color: #f8fafc; }
-        .player-card-aron { border-color: #3b82f6; background: linear-gradient(135deg, #1e293b 0%, #1d4ed8 200%); }
-        .player-card-lucas { border-color: #10b981; background: linear-gradient(135deg, #1e293b 0%, #047857 200%); }
-        .player-card-rodolfo { border-color: #f59e0b; background: linear-gradient(135deg, #1e293b 0%, #b45309 200%); }
-        .player-card-suellen { border-color: #ec4899; background: linear-gradient(135deg, #1e293b 0%, #be185d 200%); }
-        #dice-container { width: 100%; height: 220px; cursor: grab; }
+        .player-card-aron { border-left-color: #3b82f6; background: linear-gradient(135deg, #1e293b 0%, #1d4ed8 250%); }
+        .player-card-lucas { border-left-color: #10b981; background: linear-gradient(135deg, #1e293b 0%, #047857 250%); }
+        .player-card-rodolfo { border-left-color: #f59e0b; background: linear-gradient(135deg, #1e293b 0%, #b45309 250%); }
+        .player-card-suellen { border-left-color: #ec4899; background: linear-gradient(135deg, #1e293b 0%, #be185d 250%); }
+        #dice-container { width: 100%; height: 210px; cursor: grab; }
         #dice-container:active { cursor: grabbing; }
     </style>
 </head>
@@ -28,123 +28,91 @@ HTML
 
     <!-- HEADER -->
     <header class="bg-slate-900 border-b border-slate-800 py-4 px-6 shadow-xl sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
                 <div class="bg-amber-500 text-slate-950 p-2.5 rounded-xl font-extrabold text-xl shadow-lg">
                     <i class="fa-solid fa-dice-d20"></i>
                 </div>
                 <div>
                     <h1 class="text-xl md:text-2xl font-extrabold tracking-tight text-white">QUINTA DO BOARD GAME</h1>
-                    <p class="text-xs text-slate-400">Seleção Oficial & Sorteio com D12 (Modo Sincronizado)</p>
+                    <p class="text-xs text-slate-400">Seleção Oficial & Sorteio D12 (Sincronizado na Nuvem)</p>
                 </div>
             </div>
             
-            <div class="flex items-center gap-3">
-                <!-- Status de Sincronização -->
-                <div id="sync-status" class="text-xs px-3 py-1.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Sincronizado
-                </div>
-                <button onclick="toggleConfig()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 py-2 rounded-lg text-xs font-semibold transition border border-slate-700 flex items-center gap-2">
-                    <i class="fa-solid fa-gear"></i> Configurar Nuvem
-                </button>
+            <div id="sync-badge" class="text-xs px-3 py-1.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Nuvem Conectada
             </div>
         </div>
     </header>
 
-    <!-- CONFIG MODAL (NPM/NPOINT) -->
-    <div id="config-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-cloud text-amber-400 mr-2"></i> Sincronização em Nuvem</h3>
-                <button onclick="toggleConfig()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <p class="text-xs text-slate-300 mb-4">
-                Para que todos os seus amigos vejam os mesmos jogos e histórico em tempo real, usamos o <b>npoint.io</b> (gratuito).
-            </p>
-            <ol class="text-xs text-slate-400 list-decimal pl-4 mb-4 space-y-1">
-                <li>Acesse <a href="https://www.npoint.io" target="_blank" class="text-amber-400 underline">npoint.io</a>.</li>
-                <li>Cole este JSON inicial e clique em <b>Save</b>: <br><code>{"players": {}, "history": []}</code></li>
-                <li>Copie o <b>ID do Bin</b> gerado na URL (ex: <code>abc123xyz...</code>) e cole abaixo:</li>
-            </ol>
-            <div class="mb-4">
-                <label class="block text-xs font-semibold text-slate-300 mb-1">Bin ID do npoint.io:</label>
-                <input type="text" id="bin-id-input" placeholder="Cole o ID aqui..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
-            </div>
-            <div class="flex justify-end gap-2">
-                <button onclick="toggleConfig()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-lg text-xs font-semibold">Cancelar</button>
-                <button onclick="saveBinId()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 px-4 py-2 rounded-lg text-xs font-bold">Salvar e Conectar</button>
-            </div>
-        </div>
-    </div>
-
     <!-- MAIN CONTAINER -->
     <main class="max-w-6xl mx-auto px-4 py-6 flex-grow w-full grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <!-- COLUNA ESQUERDA & CENTRO: JOGADORES E ESCOLHAS (2 colunas) -->
+        <!-- COLUNA ESQUERDA: CARDS DOS JOGADORES (2 COLUNAS DE LARGURA) -->
         <div class="lg:col-span-2 space-y-6">
             
-            <div class="flex justify-between items-center">
+            <div class="flex flex-wrap justify-between items-center gap-2">
                 <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-users text-amber-400"></i> Escolha dos Jogadores (3 Jogos cada)
+                    <i class="fa-solid fa-users text-amber-400"></i> Escolha de Jogos dos Participantes
                 </h2>
                 <div class="flex gap-2">
-                    <button onclick="preencherSugestoes()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-700 transition">
-                        <i class="fa-solid fa-wand-magic-sparkles text-amber-400 mr-1"></i> Sugerir Jogos
+                    <button onclick="preencherSugestoes()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i> Exemplo Rápidos
                     </button>
-                    <button onclick="limparTudo()" class="bg-rose-950/40 hover:bg-rose-900/50 text-rose-300 px-3 py-1.5 rounded-lg text-xs font-semibold border border-rose-800/50 transition">
-                        <i class="fa-solid fa-trash-can mr-1"></i> Limpar Tudo
+                    <button onclick="limparTudo()" class="bg-rose-950/40 hover:bg-rose-900/50 text-rose-300 px-3 py-1.5 rounded-lg text-xs font-semibold border border-rose-800/50 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-trash-can"></i> Limpar Jogos
                     </button>
                 </div>
             </div>
 
             <!-- GRID DOS 4 JOGADORES -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="players-grid">
-                <!-- Gerado dinamicamente via JS -->
+                <!-- Inserido dinamicamente no carregamento inicial -->
             </div>
         </div>
 
-        <!-- COLUNA DIREITA: D12 3D E SORTEIO -->
+        <!-- COLUNA DIREITA: DADO D12 E SORTEIO -->
         <div class="space-y-6">
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden">
                 <div class="absolute top-0 right-0 transform translate-x-4 -translate-y-4 w-24 h-24 bg-amber-500/10 rounded-full blur-xl pointer-events-none"></div>
                 
-                <h2 class="text-base font-bold text-white flex items-center gap-2 mb-2">
-                    <i class="fa-solid fa-dice text-amber-400"></i> Sorteio Oficial (D12)
+                <h2 class="text-base font-bold text-white flex items-center gap-2 mb-1">
+                    <i class="fa-solid fa-dice text-amber-400"></i> Sorteio D12
                 </h2>
-                <p class="text-xs text-slate-400 mb-4">Gire o dado 3D ou clique no botão para sortear aleatoriamente um dos 12 jogos.</p>
+                <p class="text-xs text-slate-400 mb-3">Clique no botão para rolar o D12 3D e escolher o jogo de hoje.</p>
 
-                <!-- Container do Dado 3D -->
-                <div id="dice-container" class="bg-slate-950/60 rounded-xl border border-slate-800 mb-4 relative flex items-center justify-center">
-                    <div id="dice-value-overlay" class="absolute bottom-2 right-3 text-xs bg-slate-900/80 px-2.5 py-1 rounded-md text-amber-400 font-bold border border-slate-700">
-                        Resultado: -
+                <!-- Dado 3D -->
+                <div id="dice-container" class="bg-slate-950/80 rounded-xl border border-slate-800/80 mb-4 relative flex items-center justify-center shadow-inner">
+                    <div id="dice-value-overlay" class="absolute bottom-2 right-3 text-xs bg-slate-900/90 px-2.5 py-1 rounded-md text-amber-400 font-bold border border-slate-700">
+                        Aguardando Sorteio
                     </div>
                 </div>
 
                 <button onclick="rodarSorteio()" id="btn-sortear" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold py-3.5 px-4 rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 text-sm">
-                    <i class="fa-solid fa-dice-d20 text-lg"></i> ROLAR O D12 AGORA!
+                    <i class="fa-solid fa-dice-d20 text-lg"></i> ROLAR O D12!
                 </button>
 
-                <!-- RESULTADO DO SORTEIO -->
+                <!-- RESULTADO -->
                 <div id="resultado-box" class="mt-4 p-4 rounded-xl bg-slate-950 border border-slate-800 hidden">
-                    <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-1">Jogo Sorteado:</div>
-                    <div id="res-jogo" class="text-lg font-extrabold text-amber-400">--</div>
-                    <div class="flex justify-between items-center mt-2 pt-2 border-t border-slate-800/80 text-xs">
-                        <span class="text-slate-400">Indicado por: <strong id="res-jogador" class="text-white">--</strong></span>
-                        <span class="bg-slate-900 px-2 py-0.5 rounded text-slate-300 font-mono font-bold">D12: <span id="res-d12" class="text-amber-400">--</span></span>
+                    <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Jogo Sorteado:</div>
+                    <div id="res-jogo" class="text-lg font-extrabold text-amber-400 leading-tight">--</div>
+                    <div class="flex justify-between items-center mt-3 pt-2.5 border-t border-slate-800/80 text-xs">
+                        <span class="text-slate-400">Jogador: <strong id="res-jogador" class="text-white">--</strong></span>
+                        <span class="bg-slate-900 px-2.5 py-1 rounded text-slate-300 font-mono font-bold border border-slate-800">D12: <span id="res-d12" class="text-amber-400">--</span></span>
                     </div>
                 </div>
             </div>
 
-            <!-- HISTÓRICO DE SORTEIOS -->
+            <!-- HISTÓRICO DA NOITE -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
                 <div class="flex justify-between items-center mb-3">
                     <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-clock-rotate-left text-amber-400"></i> Histórico da Noite
+                        <i class="fa-solid fa-clock-rotate-left text-amber-400"></i> Histórico de Sorteios
                     </h3>
                     <button onclick="limparHistorico()" class="text-xs text-slate-400 hover:text-rose-400 transition">Limpar</button>
                 </div>
                 <div id="historico-lista" class="space-y-2 max-h-48 overflow-y-auto pr-1 text-xs">
-                    <p class="text-slate-500 text-center py-4">Nenhum sorteio realizado ainda nesta sessão.</p>
+                    <p class="text-slate-500 text-center py-4">Nenhum jogo sorteado ainda.</p>
                 </div>
             </div>
         </div>
@@ -153,186 +121,167 @@ HTML
 
     <!-- FOOTER -->
     <footer class="bg-slate-900 border-t border-slate-800 py-4 text-center text-xs text-slate-500">
-        Quinta do Board Game &bull; Aron, Lucas, Rodolfo & Suellen &bull; Sincronizado via Nuvem
+        Quinta do Board Game &bull; ARON (1,5,9) | LUCAS (2,6,10) | RODOLFO (3,7,11) | SUELLEN (4,8,12)
     </footer>
 
-    <!-- SCRIPT DA APLICAÇÃO -->
     <script>
-        // Configuração dos Jogadores e seus números do D12
+        // BIN ID oficial informado
+        const BIN_ID = "81cd1943061375c0f13f";
+
+        // Configuração Fixa dos 4 Jogadores
         const configJogadores = [
-            { nome: "ARON", corClass: "player-card-aron", badgeColor: "bg-blue-600 text-white", numeros: [1, 5, 9] },
-            { nome: "LUCAS", corClass: "player-card-lucas", badgeColor: "bg-emerald-600 text-white", numeros: [2, 6, 10] },
-            { nome: "RODOLFO", corClass: "player-card-rodolfo", badgeColor: "bg-amber-600 text-white", numeros: [3, 7, 11] },
-            { nome: "SUELLEN", corClass: "player-card-suellen", badgeColor: "bg-pink-600 text-white", numeros: [4, 8, 12] }
+            { nome: "ARON", cardClass: "player-card-aron", badgeBg: "bg-blue-600", numeros: [1, 5, 9] },
+            { nome: "LUCAS", cardClass: "player-card-lucas", badgeBg: "bg-emerald-600", numeros: [2, 6, 10] },
+            { nome: "RODOLFO", cardClass: "player-card-rodolfo", badgeBg: "bg-amber-600", numeros: [3, 7, 11] },
+            { nome: "SUELLEN", cardClass: "player-card-suellen", badgeBg: "bg-pink-600", numeros: [4, 8, 12] }
         ];
 
-        // Estado Global da Aplicação
+        // Estado Global
         let appData = {
-            players: {}, // Ex: { "ARON_1": "Catan", ... }
-            history: []  // Ex: [{ time: "20:30", jogador: "ARON", jogo: "Catan", d12: 1 }, ...]
+            players: {},
+            history: []
         };
 
-        // npoint.io Bin ID (Se não configurado, usa localStorage e avisa)
-        let binId = "81cd1943061375c0f13f";
-
-        // Inicializar Inputs dos Jogadores na Tela
-        function renderizarCards() {
-            const container = document.getElementById('players-grid');
-            container.innerHTML = '';
+        // Renderiza os campos de texto na tela IMEDIATAMENTE ao abrir
+        function construirInterfaceJogadores() {
+            const grid = document.getElementById('players-grid');
+            grid.innerHTML = '';
 
             configJogadores.forEach(j => {
-                let cardHtml = `
-                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg border-l-4 ${j.corClass.split(' ')[0]}">
-                        <div class="flex justify-between items-center mb-3">
-                            <h3 class="font-bold text-white text-sm flex items-center gap-2">
-                                <i class="fa-solid fa-user-circle"></i> ${j.nome}
-                            </h3>
-                            <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${j.badgeColor}">D12: ${j.numeros.join(', ')}</span>
-                        </div>
-                        <div class="space-y-2">
-                `;
-
+                let inputsHtml = '';
                 j.numeros.forEach((num, idx) => {
-                    let key = `${j.nome}_${idx+1}`;
-                    let val = (appData.players && appData.players[key]) || '';
-                    cardHtml += `
+                    let key = `${j.nome}_${idx + 1}`;
+                    let val = appData.players[key] || '';
+                    inputsHtml += `
                         <div class="flex items-center gap-2">
-                            <span class="w-6 text-center text-xs font-mono font-bold text-slate-400 bg-slate-950 py-1.5 rounded">${num}</span>
+                            <span class="w-7 text-center text-xs font-mono font-bold text-amber-400 bg-slate-950 py-2 rounded-lg border border-slate-800">${num}</span>
                             <input type="text" 
+                                   id="input_${key}"
                                    value="${val}" 
-                                   oninput="atualizarJogo('${key}', this.value)"
-                                   placeholder="Nome do ${idx+1}º jogo..."
-                                   class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500 transition">
+                                   oninput="salvarCampoInput('${key}', this.value)"
+                                   placeholder="Digite o nome do jogo..."
+                                   class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 transition">
                         </div>
                     `;
                 });
 
-                cardHtml += `</div></div>`;
-                container.innerHTML += cardHtml;
+                grid.innerHTML += `
+                    <div class="bg-slate-900 border-l-4 border-y border-r border-slate-800 rounded-2xl p-4 shadow-lg ${j.cardClass}">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="font-extrabold text-white text-sm tracking-wide flex items-center gap-2">
+                                <i class="fa-solid fa-user-circle text-slate-300"></i> ${j.nome}
+                            </h3>
+                            <span class="text-[10px] px-2.5 py-1 rounded-full font-bold text-white ${j.badgeBg} shadow">D12: ${j.numeros.join(', ')}</span>
+                        </div>
+                        <div class="space-y-2">${inputsHtml}</div>
+                    </div>
+                `;
             });
         }
 
-        // Atualizar dado local e enviar para a nuvem com debounce
-        let saveTimeout = null;
-        function atualizarJogo(key, valor) {
-            if (!appData.players) appData.players = {};
-            appData.players[key] = valor;
-            
-            // Sincronizar com salvamento automático
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(salvarDadosNuvem, 800);
+        // Atualiza os valores dos inputs quando dados novos chegam da nuvem
+        function atualizarValoresInputs() {
+            configJogadores.forEach(j => {
+                j.numeros.forEach((num, idx) => {
+                    let key = `${j.nome}_${idx + 1}`;
+                    let el = document.getElementById(`input_${key}`);
+                    if (el && document.activeElement !== el) { // Não sobrescreve enquanto o usuário digita
+                        el.value = appData.players[key] || '';
+                    }
+                });
+            });
         }
 
-        // Sincronização com npoint.io
-        async function carregarDadosNuvem() {
-            if (!binId) {
-                document.getElementById('sync-status').innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> Modo Local (Configure Nuvem)`;
-                document.getElementById('sync-status').className = "text-xs px-3 py-1.5 rounded-full bg-amber-950 text-amber-400 border border-amber-800 flex items-center gap-1.5";
-                // Tenta carregar do localStorage se nuvem não configurada
-                let local = localStorage.getItem('qb_local_fallback');
-                if (local) {
-                    appData = JSON.parse(local);
-                }
-                renderizarCards();
-                renderizarHistorico();
-                return;
-            }
+        let saveDebounce = null;
+        function salvarCampoInput(key, val) {
+            appData.players[key] = val;
+            clearTimeout(saveDebounce);
+            saveDebounce = setTimeout(salvarNaNuvem, 600);
+        }
 
+        // BUSCAR DADOS DA NUVEM (npoint.io)
+        async function carregarDaNuvem() {
             try {
-                let res = await fetch(`https://api.npoint.io/${binId}`);
+                let res = await fetch(`https://api.npoint.io/${BIN_ID}`);
                 if (res.ok) {
                     let data = await res.json();
-                    if (data && data.players) {
-                        appData = data;
-                        renderizarCards();
+                    if (data) {
+                        appData.players = data.players || {};
+                        appData.history = data.history || [];
+                        atualizarValoresInputs();
                         renderizarHistorico();
-                        document.getElementById('sync-status').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Sincronizado`;
-                        document.getElementById('sync-status').className = "text-xs px-3 py-1.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 flex items-center gap-1.5";
+                        setSyncBadge("Nuvem Conectada", "emerald");
                     }
                 }
             } catch (e) {
-                console.error("Erro ao sincronizar com nuvem:", e);
-                document.getElementById('sync-status').innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span> Erro de Conexão`;
-                document.getElementById('sync-status').className = "text-xs px-3 py-1.5 rounded-full bg-rose-950 text-rose-400 border border-rose-800 flex items-center gap-1.5";
+                setSyncBadge("Erro ao Sincronizar", "rose");
             }
         }
 
-        async function salvarDadosNuvem() {
-            // Salva sempre no fallback local também
-            localStorage.setItem('qb_local_fallback', JSON.stringify(appData));
-
-            if (!binId) return;
-
+        // SALVAR DADOS NA NUVEM
+        async function salvarNaNuvem() {
+            setSyncBadge("Salvando...", "amber");
             try {
-                document.getElementById('sync-status').innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-spin"></span> Salvando...`;
-                let res = await fetch(`https://api.npoint.io/${binId}`, {
+                let res = await fetch(`https://api.npoint.io/${BIN_ID}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(appData)
                 });
                 if (res.ok) {
-                    document.getElementById('sync-status').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Sincronizado`;
-                    document.getElementById('sync-status').className = "text-xs px-3 py-1.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 flex items-center gap-1.5";
+                    setSyncBadge("Salvo para Todos", "emerald");
                 }
             } catch (e) {
-                console.error("Erro ao salvar na nuvem:", e);
-                document.getElementById('sync-status').innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span> Erro ao Salvar`;
+                setSyncBadge("Erro ao Salvar", "rose");
             }
         }
 
-        function toggleConfig() {
-            let modal = document.getElementById('config-modal');
-            modal.classList.toggle('hidden');
-            if(!modal.classList.contains('hidden') && binId) {
-                document.getElementById('bin-id-input').value = binId;
-            }
+        function setSyncBadge(msg, color) {
+            const b = document.getElementById('sync-badge');
+            let colorMap = {
+                emerald: "bg-emerald-950 text-emerald-400 border-emerald-800",
+                amber: "bg-amber-950 text-amber-400 border-amber-800",
+                rose: "bg-rose-950 text-rose-400 border-rose-800"
+            };
+            let dotMap = {
+                emerald: "bg-emerald-500",
+                amber: "bg-amber-500",
+                rose: "bg-rose-500"
+            };
+            b.className = `text-xs px-3 py-1.5 rounded-full border flex items-center gap-2 ${colorMap[color]}`;
+            b.innerHTML = `<span class="w-2 h-2 rounded-full ${dotMap[color]} animate-pulse"></span> ${msg}`;
         }
 
-        function saveBinId() {
-            let val = document.getElementById('bin-id-input').value.trim();
-            if (val) {
-                binId = val;
-                localStorage.setItem('qb_bin_id', binId);
-                toggleConfig();
-                carregarDadosNuvem();
-            }
-        }
-
-        // Sugerir jogos automáticos
         function preencherSugestoes() {
-            const sugestoes = {
+            appData.players = {
                 "ARON_1": "Terraforming Mars", "ARON_2": "Ark Nova", "ARON_3": "Scythe",
                 "LUCAS_1": "Catan", "LUCAS_2": "7 Wonders", "LUCAS_3": "Splendor",
                 "RODOLFO_1": "Ticket to Ride", "RODOLFO_2": "Carcassonne", "RODOLFO_3": "Pandemic",
                 "SUELLEN_1": "Wingspan", "SUELLEN_2": "Azul", "SUELLEN_3": "Dixit"
             };
-            appData.players = sugestoes;
-            renderizarCards();
-            salvarDadosNuvem();
+            atualizarValoresInputs();
+            salvarNaNuvem();
         }
 
-        // Limpar tudo
         function limparTudo() {
-            if (confirm("Deseja realmente limpar todos os jogos cadastrados?")) {
+            if (confirm("Deseja apagar todos os jogos informados?")) {
                 appData.players = {};
-                renderizarCards();
-                salvarDadosNuvem();
+                atualizarValoresInputs();
+                salvarNaNuvem();
             }
         }
 
         function limparHistorico() {
-            if (confirm("Deseja limpar o histórico de sorteios?")) {
+            if (confirm("Deseja limpar o histórico?")) {
                 appData.history = [];
                 renderizarHistorico();
-                salvarDadosNuvem();
+                salvarNaNuvem();
             }
         }
 
-        // Renderizar Histórico
         function renderizarHistorico() {
             const container = document.getElementById('historico-lista');
             if (!appData.history || appData.history.length === 0) {
-                container.innerHTML = `<p class="text-slate-500 text-center py-4">Nenhum sorteio realizado ainda nesta sessão.</p>`;
+                container.innerHTML = `<p class="text-slate-500 text-center py-4">Nenhum jogo sorteado ainda.</p>`;
                 return;
             }
 
@@ -342,7 +291,7 @@ HTML
                     <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center">
                         <div>
                             <span class="text-amber-400 font-bold">${item.jogo}</span>
-                            <div class="text-[10px] text-slate-400">Por <span class="text-white">${item.jogador}</span> (D12: ${item.d12})</div>
+                            <div class="text-[10px] text-slate-400">Por <span class="text-white font-semibold">${item.jogador}</span> (D12: ${item.d12})</div>
                         </div>
                         <span class="text-[10px] text-slate-500 font-mono">${item.time}</span>
                     </div>
@@ -350,112 +299,89 @@ HTML
             });
         }
 
-        // Sorteio e Lógica do D12
         function rodarSorteio() {
-            // Escolher número aleatório de 1 a 12
-            let numeroSorteado = Math.floor(Math.random() * 12) + 1;
-            
-            // Descobrir qual jogador e jogo corresponde
-            let jogadorObj = null;
-            let indiceOpt = 0;
+            let numD12 = Math.floor(Math.random() * 12) + 1;
+            let jogadorSorteado = null;
+            let indexOpt = 0;
 
             configJogadores.forEach(j => {
-                let idx = j.numeros.indexOf(numeroSorteado);
+                let idx = j.numeros.indexOf(numD12);
                 if (idx !== -1) {
-                    jogadorObj = j;
-                    indiceOpt = idx + 1;
+                    jogadorSorteado = j;
+                    indexOpt = idx + 1;
                 }
             });
 
-            let key = `${jogadorObj.nome}_${indiceOpt}`;
-            let nomeJogo = (appData.players && appData.players[key]) || `[Nenhum jogo cadastrado para o nº ${numeroSorteado}]`;
+            let key = `${jogadorSorteado.nome}_${indexOpt}`;
+            let nomeJogo = appData.players[key] || `(Sem jogo preenchido no nº ${numD12})`;
 
-            // Exibir Resultado
             document.getElementById('resultado-box').classList.remove('hidden');
             document.getElementById('res-jogo').innerText = nomeJogo;
-            document.getElementById('res-jogador').innerText = jogadorObj.nome;
-            document.getElementById('res-d12').innerText = numeroSorteado;
-            document.getElementById('dice-value-overlay').innerText = `Dado: ${numeroSorteado}`;
+            document.getElementById('res-jogador').innerText = jogadorSorteado.nome;
+            document.getElementById('res-d12').innerText = numD12;
+            document.getElementById('dice-value-overlay').innerText = `Resultado D12: ${numD12}`;
 
-            // Adicionar ao histórico
+            let hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             if (!appData.history) appData.history = [];
-            let agora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            appData.history.push({ time: agora, jogador: jogadorObj.nome, jogo: nomeJogo, d12: numeroSorteado });
+            appData.history.push({ time: hora, jogador: jogadorSorteado.nome, jogo: nomeJogo, d12: numD12 });
+            
             renderizarHistorico();
-            salvarDadosNuvem();
+            salvarNaNuvem();
 
-            // Disparar Confetti festivo
-            confetti({
-                particleCount: 100,
-                spread: 70,
-                origin: { y: 0.6 }
-            });
-
-            // Animar dado 3D visualmente
-            animarDadoGiro();
+            confetti({ particleCount: 90, spread: 60, origin: { y: 0.6 } });
+            animarDado3D();
         }
 
-        // --- THREE.JS D12 3D SETUP ---
+        // --- THREE.JS D12 3D ---
         let scene, camera, renderer, d12Mesh;
         function init3DDice() {
             const container = document.getElementById('dice-container');
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-            camera.position.z = 6;
+            camera.position.z = 5.5;
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(container.clientWidth, container.clientHeight);
             container.appendChild(renderer.domElement);
 
-            // Luzes
-            let ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            let ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
             scene.add(ambientLight);
-            let pointLight = new THREE.PointLight(0xf59e0b, 2);
+            let pointLight = new THREE.PointLight(0xf59e0b, 2.5);
             pointLight.position.set(5, 5, 5);
             scene.add(pointLight);
 
-            // Geometria de Dodecaedro (D12)
-            let geometry = new THREE.DodecahedronGeometry(1.5);
-            let material = new THREE.MeshStandardMaterial({ 
-                color: 0x1e293b, 
-                roughness: 0.3, 
-                metalness: 0.8,
-                wireframe: false
-            });
+            let geometry = new THREE.DodecahedronGeometry(1.4);
+            let material = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.2, metalness: 0.8 });
 
-            // Adicionar bordas brilhantes
             d12Mesh = new THREE.Mesh(geometry, material);
             scene.add(d12Mesh);
 
-            // Animação de rotação contínua leve
             function animate() {
                 requestAnimationFrame(animate);
-                d12Mesh.rotation.x += 0.005;
-                d12Mesh.rotation.y += 0.008;
+                d12Mesh.rotation.x += 0.004;
+                d12Mesh.rotation.y += 0.006;
                 renderer.render(scene, camera);
             }
             animate();
         }
 
-        function animarDadoGiro() {
-            let t = 0;
-            let interval = setInterval(() => {
-                d12Mesh.rotation.x += 0.3;
-                d12Mesh.rotation.y += 0.4;
-                t++;
-                if (t > 20) clearInterval(interval);
+        function animarDado3D() {
+            let count = 0;
+            let timer = setInterval(() => {
+                d12Mesh.rotation.x += 0.35;
+                d12Mesh.rotation.y += 0.45;
+                count++;
+                if (count > 22) clearInterval(timer);
             }, 30);
         }
 
-        // Inicialização ao carregar a página
         window.onload = () => {
+            construirInterfaceJogadores();
             init3DDice();
-            carregarDadosNuvem();
+            carregarDaNuvem();
 
-            // Atualização automática a cada 5 segundos para puxar alterações de amigos em tempo real
-            setInterval(() => {
-                if(binId) carregarDadosNuvem();
-            }, 5000);
+            // Atualiza automaticamente a cada 4 segundos
+            setInterval(carregarDaNuvem, 4000);
         };
     </script>
 </body>
