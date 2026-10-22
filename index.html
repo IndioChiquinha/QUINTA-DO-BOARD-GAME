@@ -84,8 +84,6 @@
             animation: pulseGlow 2s infinite ease-in-out;
         }
     </style>
-	<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 </head>
 <body class="min-h-screen flex flex-col justify-between pb-10">
 
@@ -367,39 +365,28 @@
             isRolling: false
         };
 
-                // Inicialização do Firebase Realtime Database (Plano Spark)
-        const firebaseConfig = {
-            projectId: "quinta-boardgame",
-            databaseURL: "https://quinta-boardgame-default-rtdb.firebaseio.com"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const dbRef = firebase.database().ref('boardgame_state');
-
+        // Initialize Local Storage or Default State
         function initApp() {
-            // Escuta as alterações no Firebase em tempo real e atualiza a interface
-            dbRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    gameState.games = data.games || JSON.parse(JSON.stringify(SAMPLE_GAMES));
-                    gameState.history = data.history || [];
-                } else {
-                    gameState.games = JSON.parse(JSON.stringify(SAMPLE_GAMES));
-                    gameState.history = [];
-                    saveState();
-                }
-                renderPlayersGrid();
-                renderHistory();
-            });
+            const savedState = localStorage.getItem('quinta_boardgame_state');
+            if (savedState) {
+                try {
+                    const parsed = JSON.parse(savedState);
+                    if (parsed.games) gameState.games = parsed.games;
+                    if (parsed.history) gameState.history = parsed.history;
+                } catch(e) { console.error('Error loading state', e); }
+            } else {
+                // Pre-fill with sample games if empty for smooth first experience
+                gameState.games = JSON.parse(JSON.stringify(SAMPLE_GAMES));
+            }
+
+            renderPlayersGrid();
+            renderHistory();
             init3DDice();
         }
 
         function saveState() {
-            dbRef.set({
-                games: gameState.games,
-                history: gameState.history
-            });
+            localStorage.setItem('quinta_boardgame_state', JSON.stringify(gameState));
         }
-
 
         // Render Player Cards and Input Forms
         function renderPlayersGrid() {
@@ -422,7 +409,7 @@
                                 type="text" 
                                 value="${escapeHtml(val)}"
                                 placeholder="Nome do jogo #${idx + 1}"
-                                onchange="updateGame('${player.id}', ${idx}, this.value)"
+                                oninput="updateGame('${player.id}', ${idx}, this.value)"
                                 class="w-full bg-slate-900/90 border border-slate-700/60 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-600 outline-none transition"
                             />
                         </div>
